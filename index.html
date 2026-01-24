@@ -3,24 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bat29 Chat Box | Admin: Namaraj</title>
+<title>Bat29 Chat Box | Admin Enhanced</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body { background-color: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+body { background: #eef3f9; font-family: 'Segoe UI', sans-serif; }
 .hidden { display: none; }
 .card { border-radius: 15px; border: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-.blood-badge { background-color: #d00000; color: white; padding: 3px 10px; border-radius: 5px; font-weight: bold; }
 #chatWindow { height: 350px; overflow-y: auto; background: white; border-radius: 10px; padding: 15px; border: 1px solid #ddd; }
 .msg { margin-bottom: 12px; padding: 10px 15px; border-radius: 15px; max-width: 80%; }
-.sent { background: #007bff; color: white; align-self: flex-end; margin-left: auto; }
-.received { background: #e9ecef; color: #333; }
-.online-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; cursor: pointer; }
+.sent { background: #007bff; color: white; margin-left: auto; }
+.received { background: #e9ecef; }
+.blood-badge { background-color: #d00000; color: white; padding: 3px 10px; border-radius: 5px; }
+.online-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; cursor: pointer; }
+.edit-btn, .reset-btn { cursor: pointer; color: #007bff; font-size: 14px; margin-right: 5px; }
+.save-btn, .cancel-btn { cursor: pointer; margin-right: 5px; font-size: 14px; }
 .portal-header { background: linear-gradient(135deg, #0062ff, #00c6ff); color: white; padding: 20px; border-radius: 15px 15px 0 0; }
 </style>
 </head>
 <body>
-
 <div class="container mt-4">
+
 <!-- LOGIN -->
 <div id="loginSection" class="row justify-content-center">
   <div class="col-md-5 mt-5">
@@ -30,15 +32,9 @@ body { background-color: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
         <small>Connect • Update • Share</small>
       </div>
       <div class="card-body p-4">
-        <div class="mb-3">
-          <label class="form-label fw-bold">User ID (Name+Last3Digits)</label>
-          <input type="text" id="memberId" class="form-control" placeholder="e.g. Namaraj988">
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-bold">Password</label>
-          <input type="password" id="password" class="form-control" placeholder="••••••••">
-        </div>
-        <button onclick="handleLogin()" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">Sign In</button>
+        <input type="text" id="memberId" class="form-control mb-3" placeholder="Username">
+        <input type="password" id="password" class="form-control mb-3" placeholder="Password">
+        <button onclick="handleLogin()" class="btn btn-primary w-100 fw-bold py-2">Sign In</button>
       </div>
     </div>
   </div>
@@ -48,180 +44,197 @@ body { background-color: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
 <div id="dashboardSection" class="hidden">
   <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded border-start border-primary border-5">
     <h4 class="m-0 fw-bold text-dark">Bat29 Portal</h4>
-    <div class="d-flex align-items-center">
-      <span id="userDisplay" class="me-3 fw-bold text-primary">User</span>
+    <div>
+      <span id="userDisplay" class="me-3 fw-bold text-primary"></span>
+      <button id="goToChatBtn" class="btn btn-outline-secondary btn-sm hidden" onclick="goToChat()">Go to Message Box</button>
       <button onclick="location.reload()" class="btn btn-outline-danger btn-sm">Logout</button>
+      <input type="file" id="excelUpload" class="form-control form-control-sm ms-2 hidden" accept=".xlsx,.csv" onchange="uploadExcel(event)">
     </div>
   </div>
 
-  <ul class="nav nav-pills mb-4 justify-content-center bg-white p-2 rounded shadow-sm">
-    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tabList">Directory</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabUpdate">My Profile</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabChat">Chat Box</button></li>
-  </ul>
-
-  <div class="tab-content">
-    <!-- DIRECTORY -->
-    <div class="tab-pane fade show active" id="tabList">
-      <div class="card p-4">
-        <input type="text" id="search" onkeyup="searchTable()" class="form-control mb-3" placeholder="Search by Name, Office, Blood Group...">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-primary">
-              <tr>
-                <th>SN</th><th>Name</th><th id="dobCol" class="hidden">DOB</th>
-                <th>Office</th><th>Blood</th><th>Mobile</th><th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="memberTableBody"></tbody>
-          </table>
-        </div>
-      </div>
+  <div class="card p-4 mb-4">
+    <input id="search" class="form-control mb-3" placeholder="Search..." onkeyup="searchTable()">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead class="table-primary">
+          <tr>
+            <th>S.No</th>
+            <th>Employee No</th>
+            <th>Full Name</th>
+            <th>DOB</th>
+            <th>Office</th>
+            <th>Blood Group</th>
+            <th>Mobile No</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="memberTableBody"></tbody>
+      </table>
     </div>
+  </div>
 
-    <!-- PROFILE -->
-    <div class="tab-pane fade" id="tabUpdate">
-      <div class="card p-4 mx-auto" style="max-width: 500px;">
-        <h5 class="fw-bold mb-4 text-center">Update My Contact Info</h5>
-        <div class="mb-3"><label class="form-label fw-bold">Current Office Location</label><input type="text" id="upOffice" class="form-control"></div>
-        <div class="mb-3"><label class="form-label fw-bold">Active Mobile No</label><input type="text" id="upMob" class="form-control"></div>
-        <div class="mb-3"><label class="form-label fw-bold">Blood Group</label>
-          <select id="upBlood" class="form-select">
-            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
-            <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
-          </select>
-        </div>
-        <button class="btn btn-success w-100 fw-bold py-2" onclick="saveUserUpdates()">Update Profile</button>
-      </div>
+  <!-- Profile Update Section for Non-Admin -->
+  <div id="profileSection" class="card p-4 mb-4 hidden" style="max-width:500px;">
+    <h5 class="fw-bold mb-3">Update Your Details</h5>
+    <div class="mb-2"><label class="fw-bold">Username</label><input id="profName" class="form-control" readonly></div>
+    <div class="mb-2"><label class="fw-bold">Password</label><input id="profPassword" class="form-control" type="password"></div>
+    <div class="mb-2"><label class="fw-bold">DOB</label><input id="profDOB" class="form-control" type="date"></div>
+    <div class="mb-2"><label class="fw-bold">Office</label><input id="profOffice" class="form-control"></div>
+    <div class="mb-2"><label class="fw-bold">Mobile</label><input id="profMob" class="form-control"></div>
+    <div class="mb-2"><label class="fw-bold">Email</label><input id="profEmail" class="form-control"></div>
+    <div class="mb-2"><label class="fw-bold">Blood Group</label>
+      <select id="profBlood" class="form-select">
+        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+      </select>
     </div>
+    <button class="btn btn-success w-100" onclick="saveProfile()">Save</button>
+  </div>
 
-    <!-- CHAT -->
-    <div class="tab-pane fade" id="tabChat">
-      <div class="card p-3">
-        <div id="chatWindow" class="d-flex flex-column"></div>
-        <div class="input-group mt-3">
-          <input type="text" id="chatMsg" class="form-control border-primary" placeholder="Type a message...">
-          <button class="btn btn-primary px-4" onclick="sendMsg()">Send</button>
-        </div>
-      </div>
+  <div class="card p-3">
+    <h5 class="fw-bold">Chat Box</h5>
+    <div id="chatWindow" class="d-flex flex-column mb-3"></div>
+    <div class="input-group">
+      <input id="chatMsg" class="form-control" placeholder="Type a message...">
+      <button onclick="sendMsg()" class="btn btn-primary">Send</button>
     </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// ===== MASTER DATA 155 MEMBERS =====
 let masterData = [];
 for(let i=1;i<=155;i++){
-  let updated = i % 3 !== 0; // simulate some unupdated members
+  let ok = i % 3 !== 0;
+  let firstName = ok ? `Member${i}` : `User${i}`;
   masterData.push({
-    sn: i,
-    empNo: `01-${180000 + i}`,
-    name: updated ? `Member ${i}` : "",
-    dob: `2040/${(i%12+1).toString().padStart(2,'0')}/${(i%28+1).toString().padStart(2,'0')}`,
-    office: updated ? `Office ${i}` : "",
-    mob: updated ? `985100${(1000+i).toString().slice(-4)}` : "",
-    blood: updated ? ["A+","A-","B+","B-","O+","O-","AB+","AB-"][i%8] : "",
-    online: Math.random() > 0.5 // randomly online
+    sn:i,
+    empNo:`01-${180000+i}`,
+    name: firstName,
+    password: firstName,
+    dob:`2040-${(i%12+1).toString().padStart(2,'0')}-${(i%28+1).toString().padStart(2,'0')}`,
+    office: ok ? `Office ${i}` : "",
+    mob: ok ? `98${5100 + i}` : "",
+    email: ok ? `user${i}@example.com` : "",
+    blood: ok ? ["A+","A-","B+","B-","O+","O-","AB+","AB-"][i%8] : "",
+    online: Math.random() > 0.5
   });
 }
-// Admin Namaraj
 masterData[77] = {
-  sn:78, empNo:"01-208748", name:"नमराज वाग्ले", dob:"2041/06/06", office:"सामान्य प्रशासन मन्त्रालय",
-  mob:"9851062988", blood:"A+", online:true
+  sn:78, empNo:"01-208748", name:"Namaraj", password:"Namaraj", dob:"2041-06-06", office:"सामान्य प्रशासन मन्त्रालय",
+  mob:"9851062988", email:"namaraj@example.com", blood:"A+", online:true
 };
 
 let currentUser=null, isAdmin=false;
-let chatWith=null; // user chatting with
 
 function handleLogin(){
   const id=document.getElementById('memberId').value;
   const pass=document.getElementById('password').value;
-  if(id==="Namaraj988" && pass==="Namaraj988"){
-    isAdmin=true;
-    enterDashboard(masterData[77]);
-  } else {
-    isAdmin=false;
-    const user=masterData.find(u => u.mob.endsWith(id.slice(-3)) || u.empNo===id);
-    if(user && user.name) enterDashboard(user);
-    else alert("Credentials do not match!");
-  }
-}
+  currentUser = masterData.find(u=>u.name===id && u.password===pass);
+  if(id==="Namaraj" && pass==="Namaraj"){ isAdmin=true; currentUser=masterData[77]; }
+  if(!currentUser){ alert("Invalid Credentials"); return; }
 
-function enterDashboard(user){
-  currentUser=user;
   document.getElementById('loginSection').classList.add('hidden');
   document.getElementById('dashboardSection').classList.remove('hidden');
-  document.getElementById('userDisplay').innerText=user.name;
+  document.getElementById('userDisplay').innerText=currentUser.name;
 
-  document.getElementById('upOffice').value=user.office;
-  document.getElementById('upMob').value=user.mob;
-  document.getElementById('upBlood').value=user.blood;
-
-  if(isAdmin) document.getElementById('dobCol').classList.remove('hidden');
+  if(!isAdmin){
+    document.getElementById('profileSection').classList.remove('hidden');
+    document.getElementById('profName').value = currentUser.name;
+    document.getElementById('profPassword').value = currentUser.password;
+    document.getElementById('profDOB').value = currentUser.dob;
+    document.getElementById('profOffice').value = currentUser.office;
+    document.getElementById('profMob').value = currentUser.mob;
+    document.getElementById('profEmail').value = currentUser.email;
+    document.getElementById('profBlood').value = currentUser.blood;
+  } else {
+    document.getElementById('excelUpload').classList.remove('hidden');
+    document.getElementById('goToChatBtn').classList.remove('hidden');
+  }
   renderTable(masterData);
-}
-
-// Only updated members or self for normal users
-function getVisibleMembers(){
-  if(isAdmin) return masterData;
-  return masterData.filter(u=>u.name || u.mob===currentUser.mob);
 }
 
 function renderTable(data){
   const tbody=document.getElementById('memberTableBody');
-  tbody.innerHTML=data.map(u=>`
+  tbody.innerHTML = data.map(u => `
     <tr>
       <td>${u.sn}</td>
-      <td><b>${u.name || "(Not Updated)"}</b></td>
-      ${isAdmin ? `<td><small class="text-danger fw-bold">${u.dob}</small></td>` : ''}
-      <td><small>${u.office || "-"}</small></td>
-      <td>${u.blood ? `<span class="blood-badge">${u.blood}</span>` : "-"}</td>
-      <td>${u.mob || "-"}</td>
-      <td>
-        <span class="online-dot" style="background-color:${u.online?'#2dc937':'#ff0000'}" 
-          onclick="initChat(${u.sn})" title="${u.name}"></span>
-      </td>
-    </tr>
-  `).join('');
+      <td>${u.empNo}</td>
+      <td>${u.name}</td>
+      <td>${u.dob}</td>
+      <td>${u.office}</td>
+      <td>${u.blood}</td>
+      <td>${u.mob}</td>
+      <td>${u.email}</td>
+      <td><span class="online-dot" style="background:${u.online?'#2dc937':'red'}"></span></td>
+      <td>${isAdmin ? `<span class='edit-btn' onclick='editRow(${u.sn})'>✏ Edit</span><span class='reset-btn text-warning' onclick='resetPassword(${u.sn})'>🔄 Reset PW</span><span class='reset-btn text-danger' onclick='resetUsername(${u.sn})'>🔄 Reset UN</span>` : ''}</td>
+    </tr>`).join('');
 }
 
-// Clicking online dot opens chat
-function initChat(sn){
-  const user=masterData.find(u=>u.sn===sn);
-  if(!user || !user.online) return alert("User is offline!");
-  chatWith=user;
-  document.getElementById('chatWindow').innerHTML+=`<div class="msg received"><b>System:</b> Chatting with ${user.name}</div>`;
-  const chatTab=new bootstrap.Tab(document.querySelector('[data-bs-target="#tabChat"]'));
-  chatTab.show();
+function resetPassword(sn){
+  const user = masterData.find(u=>u.sn===sn);
+  user.password = user.name;
+  alert(`${user.name}'s password reset to default`);
+}
+function resetUsername(sn){
+  const newName = prompt('Enter new username:');
+  if(newName){ masterData.find(u=>u.sn===sn).name = newName; renderTable(masterData); }
 }
 
-function sendMsg(){
-  const input=document.getElementById('chatMsg');
-  if(!input.value.trim() || !chatWith) return;
-  const win=document.getElementById('chatWindow');
-  win.innerHTML+=`<div class="msg sent"><b>Me:</b> ${input.value}</div>`;
-  input.value="";
-  win.scrollTop=win.scrollHeight;
-}
-
-function saveUserUpdates(){
-  currentUser.office=document.getElementById('upOffice').value;
-  currentUser.mob=document.getElementById('upMob').value;
-  currentUser.blood=document.getElementById('upBlood').value;
-  currentUser.name=currentUser.name || `Member ${currentUser.sn}`; // set name if first update
-  alert("Profile updated.");
-  renderTable(getVisibleMembers());
+function saveProfile(){
+  currentUser.password = document.getElementById('profPassword').value;
+  currentUser.dob = document.getElementById('profDOB').value;
+  currentUser.office = document.getElementById('profOffice').value;
+  currentUser.mob = document.getElementById('profMob').value;
+  currentUser.email = document.getElementById('profEmail').value;
+  currentUser.blood = document.getElementById('profBlood').value;
+  alert('Profile updated');
+  renderTable(masterData);
 }
 
 function searchTable(){
-  const term=document.getElementById('search').value.toLowerCase();
-  const filtered=getVisibleMembers().filter(u=>
-    (u.name && u.name.toLowerCase().includes(term)) ||
-    (u.office && u.office.toLowerCase().includes(term)) ||
-    (u.blood && u.blood.toLowerCase().includes(term))
-  );
-  renderTable(filtered);
+  const t=document.getElementById('search').value.toLowerCase();
+  renderTable(masterData.filter(u=> (u.name||'').toLowerCase().includes(t) || (u.office||'').toLowerCase().includes(t) || (u.mob||'').toLowerCase().includes(t)));
+}
+
+function sendMsg(){
+  const box=document.getElementById('chatWindow');
+  const msg=document.getElementById('chatMsg');
+  if(!msg.value.trim()) return;
+  box.innerHTML += `<div class='msg sent'>${msg.value}</div>`;
+  msg.value="";
+  box.scrollTop=box.scrollHeight;
+}
+
+function goToChat(){ document.getElementById('chatWindow').scrollIntoView({behavior:'smooth'}); }
+
+function uploadExcel(event){
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, {type:'array'});
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet);
+    masterData = jsonData.map((d,i)=>({
+      sn:i+1,
+      empNo:d['Employee No'] || '',
+      name:d['Full Name'] || '',
+      password:d['Full Name'] || '',
+      dob:d.DOB || '',
+      office:d.Office || '',
+      mob:d['Mobile No'] || '',
+      email:d.Email || '',
+      blood:d['Blood Group'] || '',
+      online:false
+    }));
+    renderTable(masterData);
+    alert('Data uploaded');
+  };
+  reader.readAsArrayBuffer(file);
 }
 </script>
 </body>
